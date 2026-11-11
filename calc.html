@@ -1,0 +1,167 @@
+<!-- This is an html file, it's the easiest way I know to create the website -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Euler's Method</title>
+
+    <!-- This is styling/format/appearance of the website -->
+    <style>
+        /* Body text colors, background */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: white;
+            color: black;
+        }
+
+        /* Text boxes */
+        input {
+            padding: 7px;
+            margin: 5px;
+            width: 150px;
+        }
+
+        /* This is needed, it removes the up and down arrows from number inputs */
+        input::-webkit-inner-spin-button,
+        input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* This is used for the calculate button, style its appearance */
+        button {
+            padding: 8px 18px;
+            background-color: #285b91;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Changes the appearance of the result text */
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+    </head>
+
+    <body>
+        <!-- Title -->
+        <h1>Euler's Method (Lalith, P5) </h1>
+
+        <p>
+            Note: Equations with multiplication, you have to use the asterix. Example: xy needs to be written as x*y
+        </p>
+
+        <h3>Differential Equation</h3>
+
+        <!-- These are all input boxes -->
+        <p>Enter dy/dx</p>
+
+        <input id="equation">
+
+        <h3>Initial Point</h3>
+
+        <input id="x0" type="number" placeholder="x value">
+        <input id="y0" type="number" placeholder="y value">
+
+        <h3>Values</h3>
+
+        <p>Enter these values:</p>
+
+        <input id="dx" type="number" placeholder="Step size (change in x)">
+        <input id="xf" type="number" placeholder="Final x value">
+
+        <br><br>
+
+        <!-- This runs all calculations when the button is clicked -->
+        <button onclick="calculate()">Calculate</button>
+
+        <!-- Displays the final answer (or error messages if that happens) -->
+        <p id="result"></p>
+
+        <!-- Imports math.js, needed for calculations -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/14.8.1/math.min.js"></script>
+
+        <script>
+            /* This runs Euler's method */
+            function calculate() {
+                /* Set variables */
+                let equation = document.getElementById("equation").value;
+
+                let x = Number(document.getElementById("x0").value);
+                let y = Number(document.getElementById("y0").value);
+
+                let dx = Number(document.getElementById("dx").value);
+                let xf = Number(document.getElementById("xf").value);
+
+                /* Check if invalid input */
+                if (equation === "" ||
+                    document.getElementById("x0").value === "" ||
+                    document.getElementById("y0").value === "" ||
+                    document.getElementById("dx").value === "" ||
+                    document.getElementById("xf").value === "") {
+
+                    document.getElementById("result").innerHTML =
+                        "Not all fields filled";
+
+                    return;
+                }
+
+                /* Additional check for valid input */
+                if (!Number.isFinite(x) || !Number.isFinite(y) ||
+                    !Number.isFinite(dx) || dx === 0 ||
+                    !Number.isFinite(xf)) {
+
+                    document.getElementById("result").innerHTML =
+                        "One or more values aren't valid";
+
+                    return;
+                }
+
+                /* Assign the step size */
+                let n = Math.round((xf - x) / dx);
+
+                /* Check if the step size is valid */
+                if (n <= 0 || n > 10000 ||
+                    Math.abs((x + n * dx) - xf) > 0.000000001) {
+
+                    document.getElementById("result").innerHTML =
+                        "Step size is inaccurate, it's either going in the wrong direction (ex: step size -0.1, initial x value 1, final x value 2) or it's not possible to reach the final x value by continously adding the step size to the initial x value (ex: 0.2 step size, initial 1, final 1.3) ";
+
+                    return;
+                }
+
+                try {
+                    /* Converts the equation into something JavaScript can calculate */
+                    let f = math.compile(equation);
+                    /* Goes through each step using the step size and calculates */
+                    for (let i = 0; i < n; i++) {
+                        /* Finds the slope (dy/dx) at that point */
+                        let slope = f.evaluate({x: x, y: y});
+
+                        /* Modifies y and x based on dy and dx */
+                        y = y + slope * dx;
+                        x = x + dx;
+
+                        /* Stops if there is an invalid value, produced by calculation */
+                        if (!Number.isFinite(x) || !Number.isFinite(y)) {
+                            throw new Error();
+                        }
+                    }
+
+                    /* Displays the final point, rounded four decimals */
+                    document.getElementById("result").innerHTML =
+                        "<b>Final Point:</b> (" +
+                        xf.toFixed(4) + ", " + y.toFixed(4) + ")"
+                }
+
+                /* Shows an error if the equation can't be calculated, and therefore isn't valid */
+                catch (error) {
+                    document.getElementById("result").innerHTML =
+                        "Invalid equation";
+                }
+            }
+        </script>
+    </body>
+    </html>
